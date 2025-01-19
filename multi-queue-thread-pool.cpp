@@ -83,9 +83,13 @@ void JobQueue::pause() {
     paused = true;
 }
 
-void JobQueue::unpause() {
+void JobQueue::unpause(ThreadPool& pool) {
     std::lock_guard<std::mutex> lock{mutex};
     paused = false;
+    if (jobs.empty() || job_pending) {
+        return;
+    }
+    pool.enqueue([&, this]() { run_front_job(pool); });
 }
 
 void JobQueue::wait_for_current() {
@@ -167,7 +171,7 @@ void MultiQueueThreadPool::pause(QueueHandle handle) {
 }
 
 void MultiQueueThreadPool::unpause(QueueHandle handle) {
-    handle.queue->unpause();
+    handle.queue->unpause(pool);
 }
 
 void MultiQueueThreadPool::stop(QueueHandle handle) {

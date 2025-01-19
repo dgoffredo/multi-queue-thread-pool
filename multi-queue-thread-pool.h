@@ -25,12 +25,12 @@ public:
     ~JobQueue() = default;
 
     // return zero on success
-    int enqueue(std::function<void()> job, ThreadPool& pool);
+    int enqueue(std::function<void()> job, ThreadPool&);
 
     void seal(); // disable enqueue
     void unseal(); // enable enqueue
     void pause(); // disable job execution
-    void unpause(); // enable job execution
+    void unpause(ThreadPool&); // enable job execution
     void wait_for_current(); // block until the currently pending job, if any, finishes
     void wait_for_empty(); // block until the queue is empty
     void flush(); // `seal()` and `wait_for_empty()`
