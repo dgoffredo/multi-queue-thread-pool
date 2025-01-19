@@ -78,10 +78,13 @@ void JobQueue::pause() {
 }
 
 void JobQueue::unpause(ThreadPool& pool) {
-  std::lock_guard<std::mutex> lock{mutex};
-  paused = false;
-  if (jobs.empty() || job_pending) {
-    return;
+  {
+    std::lock_guard<std::mutex> lock{mutex};
+    paused = false;
+    if (jobs.empty() || job_pending) {
+      return;
+    }
+    job_pending = true;
   }
   pool.enqueue([&, this]() { run_front_job(pool); });
 }
